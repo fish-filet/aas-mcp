@@ -199,8 +199,8 @@ def maybe_start_ui(ui_host: str, ui_port: int, mcp_host: str, mcp_port: int) -> 
             ],
         )
 
-        # Reusable engine inputs
-        with gr.Row():
+        # Reusable engine inputs in a single column, each on its own row
+        with gr.Column():
             api_key, endpoint_url, require_mcp_auth, mcp_bearer_token = build_engine_inputs()
         # Toggle visibility of MCP bearer token based on checkbox
         def _toggle_token_vis(enabled: bool):  # pragma: no cover - UI binding
