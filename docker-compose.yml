@@ -5,6 +5,8 @@ services:
     build: .
     image: aas-mcp:local
     container_name: aas-mcp
+    extra_hosts:
+      - "docker.host.internal:host-gateway"
     environment:
       # MCP transport and ports
       - AAS_MCP_TRANSPORT=http
@@ -12,12 +14,13 @@ services:
       - AAS_MCP_PORT=${PORT:-8000}
       - AAS_MCP_UI_HOST=0.0.0.0
       - AAS_MCP_UI_PORT=${UI_PORT:-7860}
+      # Disable Gradio analytics/telemetry
+      - GRADIO_ANALYTICS_ENABLED=False
       # ShellSmith BaSyx environment host accessible from inside container
       # For Docker Desktop on macOS/Windows, host.docker.internal resolves to the host
       # For Linux, set this to your actual host URL/IP
       - SHELLSMITH_BASYX_ENV_HOST=${SHELLSMITH_BASYX_ENV_HOST:-http://host.docker.internal:8081}
     ports:
-      - "${PORT:-8000}:8000"   # MCP HTTP Streaming
-      - "${UI_PORT:-7860}:7860" # Gradio UI
+      - "${PORT:-33333}:33333"   # MCP HTTP Streaming
+      - "${UI_PORT:-37860}:37860" # Gradio UI
     # The default CMD in the Dockerfile starts both endpoints
-

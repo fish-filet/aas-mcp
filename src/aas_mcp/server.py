@@ -693,8 +693,8 @@ def cli_main() -> None:
     parser.add_argument(
         "--port",
         type=int,
-        default=int(os.environ.get("AAS_MCP_PORT", "8000")),
-        help="HTTP port to bind (for --transport http). Default: 8000",
+        default=int(os.environ.get("AAS_MCP_PORT", "33333")),
+        help="HTTP port to bind (for --transport http). Default: 33333",
     )
     parser.add_argument(
         "--ui-host",
@@ -704,7 +704,7 @@ def cli_main() -> None:
     parser.add_argument(
         "--ui-port",
         type=int,
-        default=int(os.environ.get("AAS_MCP_UI_PORT", "7860")),
+        default=int(os.environ.get("AAS_MCP_UI_PORT", "37860")),
         help="Gradio UI port (only with --transport http). Default: 7860",
     )
     parser.add_argument(

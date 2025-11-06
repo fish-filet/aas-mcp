@@ -49,6 +49,9 @@ Documentation = "https://github.com/SmartFactory-KL/aas-mcp"
 
 [tool.hatch.version]
 source = "vcs"
+# Ensure builds succeed when VCS metadata is unavailable (e.g., in Docker)
+# by providing a fallback version for setuptools-scm via hatch-vcs.
+raw-options = { fallback_version = "0.0.0" }
 
 [tool.hatch.build.targets.sdist]
 include = ["src", "README.md", "LICENSE"]
