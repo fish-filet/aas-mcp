@@ -23,6 +23,8 @@ keywords = []
 dependencies = [
     "fastMCP",
     "shellsmith>=0.4.0",
+    "gradio>=4.0.0",
+    "httpx>=0.24",
 ]
 
 [project.optional-dependencies]

@@ -1,10 +1,13 @@
 """MCP server for Asset Administration Shell (AAS) BaSyx integration."""
 
+import argparse
 import logging
+import os
 
 from fastmcp import FastMCP
 from shellsmith.clients import AsyncClient
 from shellsmith.config import config
+from .ui import maybe_start_ui
 
 logger = logging.getLogger(__name__)
 
@@ -656,17 +659,75 @@ async def is_healthy(host: str = config.host, timeout: float = config.timeout) -
 
 
 async def main() -> None:
-    """Run the MCP server."""
+    """Run the MCP server (stdio by default)."""
     logging.basicConfig(level=logging.INFO)
-    logger.info("Starting AAS MCP server")
+    logger.info("Starting AAS MCP server (stdio)")
     await app.run()
 
 
 def cli_main() -> None:
-    """CLI entry point for the MCP server."""
+    """CLI entry point for the MCP server.
+
+    - stdio (default): `aas-mcp`
+    - HTTP streaming: `aas-mcp --transport http [--host 127.0.0.1 --port 8000]`
+    """
     logging.basicConfig(level=logging.INFO)
-    logger.info("Starting AAS MCP server")
-    app.run()
+
+    parser = argparse.ArgumentParser(
+        prog="aas-mcp",
+        description=(
+            "Run the AAS MCP server either via stdio (default) or HTTP Streaming."
+        ),
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default=os.environ.get("AAS_MCP_TRANSPORT", "stdio"),
+        help="Transport to use: stdio (default) or http (HTTP Streaming)",
+    )
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("AAS_MCP_HOST", "127.0.0.1"),
+        help="HTTP host to bind (for --transport http)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get("AAS_MCP_PORT", "8000")),
+        help="HTTP port to bind (for --transport http). Default: 8000",
+    )
+    parser.add_argument(
+        "--ui-host",
+        default=os.environ.get("AAS_MCP_UI_HOST", "127.0.0.1"),
+        help="Gradio UI host (only with --transport http). Default: 127.0.0.1",
+    )
+    parser.add_argument(
+        "--ui-port",
+        type=int,
+        default=int(os.environ.get("AAS_MCP_UI_PORT", "7860")),
+        help="Gradio UI port (only with --transport http). Default: 7860",
+    )
+    parser.add_argument(
+        "--no-ui",
+        action="store_true",
+        help="Do not start Gradio UI even in HTTP mode",
+    )
+
+    args = parser.parse_args()
+
+    if args.transport == "http":
+        logger.info("Transport: http on %s:%s", args.host, args.port)
+        if not args.no_ui:
+            maybe_start_ui(
+                ui_host=args.ui_host,
+                ui_port=args.ui_port,
+                mcp_host=args.host,
+                mcp_port=args.port,
+            )
+        app.run(transport="http", host=args.host, port=args.port)
+    else:
+        logger.info("Transport: stdio")
+        app.run()
 
 
 if __name__ == "__main__":

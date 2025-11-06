@@ -36,6 +36,56 @@ pip install aas-mcp
 aas-mcp
 ```
 
+### HTTP Streaming mode + UI
+
+Run the server via HTTP Streaming with a companion Gradio UI on a separate port:
+
+```bash
+# Default HTTP server 127.0.0.1:8000 and UI 127.0.0.1:7860
+aas-mcp --transport http
+
+# Custom MCP and UI hosts/ports
+aas-mcp --transport http --host 0.0.0.0 --port 8765 \
+        --ui-host 0.0.0.0 --ui-port 9000
+
+# Disable UI if not needed
+aas-mcp --transport http --no-ui
+```
+
+Environment variables:
+
+- `AAS_MCP_TRANSPORT` = `stdio` (default) or `http`
+- `AAS_MCP_HOST` = host to bind in HTTP mode (default `127.0.0.1`)
+- `AAS_MCP_PORT` = port to bind in HTTP mode (default `8000`)
+- `AAS_MCP_UI_HOST` = host for Gradio UI (default `127.0.0.1`)
+- `AAS_MCP_UI_PORT` = port for Gradio UI (default `7860`)
+
+## 🐳 Docker
+
+Build and run the container exposing both the MCP HTTP server and the Gradio UI:
+
+```bash
+# Build
+docker build -t aas-mcp:local .
+
+# Run (maps MCP 8000 and UI 7860)
+docker run --rm -p 8000:8000 -p 7860:7860 \
+  -e SHELLSMITH_BASYX_ENV_HOST=http://host.docker.internal:8081 \
+  --name aas-mcp aas-mcp:local
+```
+
+Using Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Environment variables you may want to set:
+
+- `PORT` and `UI_PORT` to override container ports (mapped via compose)
+- `SHELLSMITH_BASYX_ENV_HOST` to point at your BaSyx environment
+- `AAS_MCP_*` to control transport/host/ports (defaults are set for HTTP+UI)
+
 ### Available Tools
 
 The MCP server provides 25+ tools for AAS management:
@@ -119,6 +169,11 @@ You can override it in several ways:
   ```
 
 Each tool also accepts a `host` parameter to override the default configuration dynamically.
+
+### What the UI does
+
+- Configure Engine: POST to `{engine_host}/api/mcp/register` with payload `{ "name": "aas-mcp", "mcp_url": "http://<mcp_host>:<mcp_port>" }` using the provided API key as Bearer token.
+- Set ShellSmith Host: updates the ShellSmith BaSyx host (also sets `SHELLSMITH_BASYX_ENV_HOST`). Note: since default parameter values in tools are bound at import time, a server restart may be required for defaults to update unless the client passes the `host` parameter explicitly.
 
 ## 🤝 Contributing
 
